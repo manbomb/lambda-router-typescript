@@ -42,7 +42,12 @@ export default class Router {
     async call(event: RouterEvent | LambdaFunctionUrlEvent) {
         const httpContext = event.requestContext.http;
         const httpMethod = httpContext.method;
-        const path = httpContext.path;
+        const stage = (event as LambdaFunctionUrlEvent).requestContext.stage;
+        const path = httpContext.path.replace(/\/$/, '');
+
+        if (stage != '$default') {
+            path.replace(stage, '');
+        }
 
         const filtredRoutes = this.routes.filter(r => {
             return r.httpMethod === httpMethod && r.path === path;
