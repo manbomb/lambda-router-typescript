@@ -43,7 +43,7 @@ export default class Router {
         const httpContext = event.requestContext.http;
         const httpMethod = httpContext.method;
         const stage = (event as LambdaFunctionUrlEvent).requestContext.stage;
-        let path = httpContext.path.replace(/\/$/, '');
+        let path = httpContext.path.replace(/(^.+)\/$/, '$1');
 
         if (stage != '$default') {
             path = path.replace(stage, '');
