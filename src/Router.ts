@@ -1,41 +1,68 @@
-import type { APIGatewayProxyEventV2 } from 'aws-lambda';
+import type { APIGatewayProxyEventV2 } from "aws-lambda";
 
 type LambdaFunctionUrlEvent = APIGatewayProxyEventV2;
 
 export default class Router {
     private routes: Route[] = [];
-    private authorizationMiddleware: ((event: LambdaFunctionUrlEvent) => Promise<boolean> | boolean) | undefined;
+    private authorizationMiddleware:
+        | ((event: LambdaFunctionUrlEvent) => Promise<boolean> | boolean)
+        | undefined;
 
-    constructor(authorizationMiddleware?: ((event: LambdaFunctionUrlEvent) => Promise<boolean> | boolean)) {
+    constructor(
+        authorizationMiddleware?: (
+            event: LambdaFunctionUrlEvent
+        ) => Promise<boolean> | boolean
+    ) {
         this.authorizationMiddleware = authorizationMiddleware;
     }
 
-    get(path: string, callback: (event: RouterEvent) => Promise<any>, options?: RouteOptions) {
-        this.addRoute('GET', path, callback, options);
+    get(
+        path: string,
+        callback: (event: RouterEvent) => Promise<any>,
+        options?: RouteOptions
+    ) {
+        this.addRoute("GET", path, callback, options);
         return this;
     }
 
-    post(path: string, callback: (event: RouterEvent) => Promise<any>, options?: RouteOptions) {
-        this.addRoute('POST', path, callback, options);
+    post(
+        path: string,
+        callback: (event: RouterEvent) => Promise<any>,
+        options?: RouteOptions
+    ) {
+        this.addRoute("POST", path, callback, options);
         return this;
     }
 
-    put(path: string, callback: (event: RouterEvent) => Promise<any>, options?: RouteOptions) {
-        this.addRoute('PUT', path, callback, options);
+    put(
+        path: string,
+        callback: (event: RouterEvent) => Promise<any>,
+        options?: RouteOptions
+    ) {
+        this.addRoute("PUT", path, callback, options);
         return this;
     }
 
-    delete(path: string, callback: (event: RouterEvent) => Promise<any>, options?: RouteOptions) {
-        this.addRoute('DELETE', path, callback, options);
+    delete(
+        path: string,
+        callback: (event: RouterEvent) => Promise<any>,
+        options?: RouteOptions
+    ) {
+        this.addRoute("DELETE", path, callback, options);
         return this;
     }
 
-    private addRoute(httpMethod: string, path: string, callback: (event: RouterEvent) => Promise<any>, options?: RouteOptions) {
+    private addRoute(
+        httpMethod: string,
+        path: string,
+        callback: (event: RouterEvent) => Promise<any>,
+        options?: RouteOptions
+    ) {
         this.routes.push({
             httpMethod,
             path,
             callback,
-            auth: options?.auth || false
+            auth: options?.auth || false,
         });
     }
 
@@ -43,13 +70,13 @@ export default class Router {
         const httpContext = event.requestContext.http;
         const httpMethod = httpContext.method;
         const stage = (event as LambdaFunctionUrlEvent).requestContext.stage;
-        let path = httpContext.path.replace(/(^.+)\/$/, '$1');
+        let path = httpContext.path.replace(/(^.+)\/$/, "$1");
 
-        if (stage != '$default') {
-            path = path.replace(stage, '');
+        if (stage != "$default") {
+            path = path.replace(stage, "");
         }
 
-        const filtredRoutes = this.routes.filter(r => {
+        const filtredRoutes = this.routes.filter((r) => {
             return r.httpMethod === httpMethod && r.path === path;
         });
 
@@ -57,21 +84,23 @@ export default class Router {
             throw {
                 statusCode: 404,
                 body: {
-                    message: `Not found: ${httpMethod} ${path}`
-                }
+                    message: `Not found: ${httpMethod} ${path}`,
+                },
             };
         }
 
         const selectedRoute = filtredRoutes[0];
 
         if (this.authorizationMiddleware && selectedRoute.auth) {
-            const authorized = await this.authorizationMiddleware(event as LambdaFunctionUrlEvent);
+            const authorized = await this.authorizationMiddleware(
+                event as LambdaFunctionUrlEvent
+            );
             if (!authorized) {
                 throw {
                     statusCode: 403,
                     body: {
-                        message: `Not authorized`
-                    }
+                        message: `Not authorized`,
+                    },
                 };
             }
         }
@@ -85,10 +114,10 @@ export default class Router {
 export interface RouterEvent {
     requestContext: {
         http: {
-            method: string,
-            path: string
-        }
-    }
+            method: string;
+            path: string;
+        };
+    };
 }
 
 export interface Route {

@@ -1,24 +1,24 @@
 {
-  "name": "lambda-router-typescript",
-  "version": "1.0.8",
-  "description": "",
-  "main": "lib/index.js",
-  "types": "lib/index.d.ts",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "tsc"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "files": [
-    "lib/**/*"
-  ],
-  "devDependencies": {
-    "@types/aws-lambda": "^8.10.110",
-    "typescript": "^4.9.5"
-  },
-  "dependencies": {
-    "aws-lambda": "^1.0.7"
-  }
+    "name": "lambda-router-typescript",
+    "version": "1.0.8",
+    "description": "",
+    "main": "lib/index.js",
+    "types": "lib/index.d.ts",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1",
+        "build": "tsc"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "files": [
+        "lib/**/*"
+    ],
+    "devDependencies": {
+        "@types/aws-lambda": "^8.10.110",
+        "typescript": "^4.9.5"
+    },
+    "dependencies": {
+        "aws-lambda": "^1.0.7"
+    }
 }

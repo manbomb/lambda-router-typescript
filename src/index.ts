@@ -1,9 +1,6 @@
-import Router, { RouterEvent, Route, RouteOptions } from "./Router";
+import Router, { Route, RouteOptions, RouterEvent } from "./Router";
 
 export default Router;
 
-export {
-    RouteOptions,
-    Route,
-    RouterEvent
-}
+export { Route, RouteOptions, RouterEvent };
+
