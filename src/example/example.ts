@@ -1,8 +1,4 @@
-import {
-    APIGatewayProxyStructuredResultV2
-} from "aws-lambda";
-
-import Router, { ExpressLambdaServer, LambdaFunctionUrlEvent, LambdaFunctionUrlResult, Middleware, RateLimiter } from "../index";
+import Router, { ExpressLambdaServer, LambdaFunctionUrlEvent, LambdaFunctionUrlResult, Middleware, RateLimiter } from "../../lib";
 
 import ExampleRepository from "./exampleRepository";
 
@@ -30,7 +26,7 @@ const addKeyValueToBodyMiddleware: Middleware = (event) => {
 const returnErrorMiddleware: Middleware = (event) => {
     const randomBool = Math.random() > 0.05;
     if (randomBool) return [null, null];
-    const res: APIGatewayProxyStructuredResultV2 = {
+    const res: LambdaFunctionUrlResult = {
         body: JSON.stringify({
             message: "An error!",
         }),

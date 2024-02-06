@@ -1,4 +1,4 @@
-import Repository from "../Repository";
+import { Repository } from "../../lib";
 
 export default class ExampleRepository implements Repository {
     data: { [key: string]: number | undefined };
@@ -7,7 +7,7 @@ export default class ExampleRepository implements Repository {
     }
 
     get(id: string): number {
-        const now = (new Date()).getTime();
+        const now = new Date().getTime();
         const lastTime = this.data[id];
         this.data[id] = now;
         if (lastTime) return lastTime;
