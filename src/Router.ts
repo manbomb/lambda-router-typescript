@@ -1,8 +1,5 @@
-import type { APIGatewayProxyEventV2, APIGatewayProxyStructuredResultV2 } from "aws-lambda";
-import Middleware from "./Middleware";
-
-type LambdaFunctionUrlEvent = APIGatewayProxyEventV2;
-type LambdaFunctionUrlResult = APIGatewayProxyStructuredResultV2;
+import { LambdaFunctionUrlEvent } from ".";
+import Middleware from "./middlewares/Middleware";
 
 export default class Router {
     private routes: Route[] = [];
