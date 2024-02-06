@@ -1,24 +1,22 @@
-import type { APIGatewayProxyEventV2 } from "aws-lambda";
+import type { APIGatewayProxyEventV2, APIGatewayProxyStructuredResultV2 } from "aws-lambda";
+import Middleware from "./Middleware";
 
 type LambdaFunctionUrlEvent = APIGatewayProxyEventV2;
+type LambdaFunctionUrlResult = APIGatewayProxyStructuredResultV2;
 
 export default class Router {
     private routes: Route[] = [];
-    private authorizationMiddleware:
-        | ((event: LambdaFunctionUrlEvent) => Promise<boolean> | boolean)
-        | undefined;
+    private middlewares: Middleware[] = [];
 
-    constructor(
-        authorizationMiddleware?: (
-            event: LambdaFunctionUrlEvent
-        ) => Promise<boolean> | boolean
-    ) {
-        this.authorizationMiddleware = authorizationMiddleware;
+    constructor() {}
+
+    use(middleware: Middleware) {
+        this.middlewares.push(middleware);
     }
 
     get(
         path: string,
-        callback: (event: RouterEvent) => Promise<any>,
+        callback: (event: LambdaFunctionUrlEvent) => Promise<any>,
         options?: RouteOptions
     ) {
         this.addRoute("GET", path, callback, options);
@@ -27,7 +25,7 @@ export default class Router {
 
     post(
         path: string,
-        callback: (event: RouterEvent) => Promise<any>,
+        callback: (event: LambdaFunctionUrlEvent) => Promise<any>,
         options?: RouteOptions
     ) {
         this.addRoute("POST", path, callback, options);
@@ -36,7 +34,7 @@ export default class Router {
 
     put(
         path: string,
-        callback: (event: RouterEvent) => Promise<any>,
+        callback: (event: LambdaFunctionUrlEvent) => Promise<any>,
         options?: RouteOptions
     ) {
         this.addRoute("PUT", path, callback, options);
@@ -45,7 +43,7 @@ export default class Router {
 
     delete(
         path: string,
-        callback: (event: RouterEvent) => Promise<any>,
+        callback: (event: LambdaFunctionUrlEvent) => Promise<any>,
         options?: RouteOptions
     ) {
         this.addRoute("DELETE", path, callback, options);
@@ -55,7 +53,7 @@ export default class Router {
     private addRoute(
         httpMethod: string,
         path: string,
-        callback: (event: RouterEvent) => Promise<any>,
+        callback: (event: LambdaFunctionUrlEvent) => Promise<any>,
         options?: RouteOptions
     ) {
         this.routes.push({
@@ -66,7 +64,7 @@ export default class Router {
         });
     }
 
-    async call(event: RouterEvent | LambdaFunctionUrlEvent) {
+    async call(event: LambdaFunctionUrlEvent) {
         const httpContext = event.requestContext.http;
         const httpMethod = httpContext.method;
         const stage = (event as LambdaFunctionUrlEvent).requestContext.stage;
@@ -91,33 +89,23 @@ export default class Router {
 
         const selectedRoute = filtredRoutes[0];
 
-        if (this.authorizationMiddleware && selectedRoute.auth) {
-            const authorized = await this.authorizationMiddleware(
-                event as LambdaFunctionUrlEvent
-            );
-            if (!authorized) {
-                throw {
-                    statusCode: 403,
-                    body: {
-                        message: `Not authorized`,
-                    },
-                };
+        let eventAfterMiddlewares: LambdaFunctionUrlEvent = event;
+
+        for (let i = 0; i < this.middlewares.length; i++) {
+            const middleware = this.middlewares[i];
+            const [event, response] = await middleware(eventAfterMiddlewares);
+            if (response) {
+                return response;
+            }
+            if (event) {
+                eventAfterMiddlewares = event;
             }
         }
 
-        const response = await filtredRoutes[0].callback(event);
+        const response = await selectedRoute.callback(eventAfterMiddlewares);
 
         return response;
     }
-}
-
-export interface RouterEvent {
-    requestContext: {
-        http: {
-            method: string;
-            path: string;
-        };
-    };
 }
 
 export interface Route {
