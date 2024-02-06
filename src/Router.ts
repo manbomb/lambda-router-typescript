@@ -9,7 +9,7 @@ export default class Router {
 
     get(
         path: string,
-        callback: (event: RouterEvent) => Promise<any>,
+        callback: (event: LambdaFunctionUrlEvent) => Promise<any>,
         options?: RouteOptions
     ) {
         this.addRoute("GET", path, callback, options);
@@ -18,7 +18,7 @@ export default class Router {
 
     post(
         path: string,
-        callback: (event: RouterEvent) => Promise<any>,
+        callback: (event: LambdaFunctionUrlEvent) => Promise<any>,
         options?: RouteOptions
     ) {
         this.addRoute("POST", path, callback, options);
@@ -27,7 +27,7 @@ export default class Router {
 
     put(
         path: string,
-        callback: (event: RouterEvent) => Promise<any>,
+        callback: (event: LambdaFunctionUrlEvent) => Promise<any>,
         options?: RouteOptions
     ) {
         this.addRoute("PUT", path, callback, options);
@@ -36,7 +36,7 @@ export default class Router {
 
     delete(
         path: string,
-        callback: (event: RouterEvent) => Promise<any>,
+        callback: (event: LambdaFunctionUrlEvent) => Promise<any>,
         options?: RouteOptions
     ) {
         this.addRoute("DELETE", path, callback, options);
@@ -46,7 +46,7 @@ export default class Router {
     private addRoute(
         httpMethod: string,
         path: string,
-        callback: (event: RouterEvent) => Promise<any>,
+        callback: (event: LambdaFunctionUrlEvent) => Promise<any>,
         options?: RouteOptions
     ) {
         this.routes.push({
@@ -57,7 +57,7 @@ export default class Router {
         });
     }
 
-    async call(event: RouterEvent | LambdaFunctionUrlEvent) {
+    async call(event: LambdaFunctionUrlEvent) {
         const httpContext = event.requestContext.http;
         const httpMethod = httpContext.method;
         const stage = (event as LambdaFunctionUrlEvent).requestContext.stage;
@@ -86,15 +86,6 @@ export default class Router {
 
         return response;
     }
-}
-
-export interface RouterEvent {
-    requestContext: {
-        http: {
-            method: string;
-            path: string;
-        };
-    };
 }
 
 export interface Route {

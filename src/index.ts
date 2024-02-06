@@ -1,7 +1,7 @@
 import ExpressLambdaServer from "./ExpressLambdaServer";
-import Router, { Route, RouteOptions, RouterEvent } from "./Router";
+import Router, { Route, RouteOptions } from "./Router";
 
 export default Router;
 
-export { ExpressLambdaServer, Route, RouteOptions, RouterEvent };
+export { ExpressLambdaServer, Route, RouteOptions };
 
