@@ -1,12 +1,20 @@
-import Router, { ExpressLambdaServer, LambdaFunctionUrlEvent, LambdaFunctionUrlResult, Middleware, RateLimiter } from "../../lib";
+import Router, {
+    ExpressLambdaServer,
+    JSONBody,
+    LambdaFunctionUrlEvent,
+    LambdaFunctionUrlResult,
+    Middleware,
+    RateLimiter,
+} from "../../lib";
 
 import ExampleRepository from "./exampleRepository";
 
 const repository = new ExampleRepository();
 const rateLimiter = new RateLimiter(repository, {
     rpm: 20,
-    rps: null
-})
+    rps: null,
+});
+const jsonBody = new JSONBody();
 
 const consoleMiddleware: Middleware = (event) => {
     console.log(event);
@@ -44,6 +52,7 @@ async function handler(
     router.use(addKeyValueToBodyMiddleware);
     router.use(returnErrorMiddleware);
     router.use(rateLimiter.middleware);
+    router.use(jsonBody.middleware);
 
     router.post("/teste", async (event) => {
         const response: LambdaFunctionUrlResult = {
