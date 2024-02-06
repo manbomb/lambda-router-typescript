@@ -4,17 +4,8 @@ type LambdaFunctionUrlEvent = APIGatewayProxyEventV2;
 
 export default class Router {
     private routes: Route[] = [];
-    private authorizationMiddleware:
-        | ((event: LambdaFunctionUrlEvent) => Promise<boolean> | boolean)
-        | undefined;
 
-    constructor(
-        authorizationMiddleware?: (
-            event: LambdaFunctionUrlEvent
-        ) => Promise<boolean> | boolean
-    ) {
-        this.authorizationMiddleware = authorizationMiddleware;
-    }
+    constructor() {}
 
     get(
         path: string,
@@ -91,21 +82,7 @@ export default class Router {
 
         const selectedRoute = filtredRoutes[0];
 
-        if (this.authorizationMiddleware && selectedRoute.auth) {
-            const authorized = await this.authorizationMiddleware(
-                event as LambdaFunctionUrlEvent
-            );
-            if (!authorized) {
-                throw {
-                    statusCode: 403,
-                    body: {
-                        message: `Not authorized`,
-                    },
-                };
-            }
-        }
-
-        const response = await filtredRoutes[0].callback(event);
+        const response = await selectedRoute.callback(event);
 
         return response;
     }
