@@ -1,13 +1,16 @@
 import {
-    APIGatewayProxyEventV2,
-    APIGatewayProxyStructuredResultV2,
+    APIGatewayProxyStructuredResultV2
 } from "aws-lambda";
 
-import Router, { ExpressLambdaServer } from "../index";
-import Middleware from "../Middleware";
+import Router, { ExpressLambdaServer, LambdaFunctionUrlEvent, LambdaFunctionUrlResult, Middleware, RateLimiter } from "../index";
 
-type LambdaFunctionUrlResult = APIGatewayProxyStructuredResultV2;
-type LambdaFunctionUrlEvent = APIGatewayProxyEventV2;
+import ExampleRepository from "./exampleRepository";
+
+const repository = new ExampleRepository();
+const rateLimiter = new RateLimiter(repository, {
+    rpm: 20,
+    rps: null
+})
 
 const consoleMiddleware: Middleware = (event) => {
     console.log(event);
@@ -25,7 +28,7 @@ const addKeyValueToBodyMiddleware: Middleware = (event) => {
 };
 
 const returnErrorMiddleware: Middleware = (event) => {
-    const randomBool = Math.random() > 0.5;
+    const randomBool = Math.random() > 0.05;
     if (randomBool) return [null, null];
     const res: APIGatewayProxyStructuredResultV2 = {
         body: JSON.stringify({
@@ -44,6 +47,7 @@ async function handler(
     router.use(consoleMiddleware);
     router.use(addKeyValueToBodyMiddleware);
     router.use(returnErrorMiddleware);
+    router.use(rateLimiter.middleware);
 
     router.post("/teste", async (event) => {
         const response: LambdaFunctionUrlResult = {
