@@ -1,11 +1,18 @@
-import type { APIGatewayProxyEventV2 } from "aws-lambda";
+import type { APIGatewayProxyEventV2, APIGatewayProxyStructuredResultV2 } from "aws-lambda";
+import Middleware from "./Middleware";
 
 type LambdaFunctionUrlEvent = APIGatewayProxyEventV2;
+type LambdaFunctionUrlResult = APIGatewayProxyStructuredResultV2;
 
 export default class Router {
     private routes: Route[] = [];
+    private middlewares: Middleware[] = [];
 
     constructor() {}
+
+    use(middleware: Middleware) {
+        this.middlewares.push(middleware);
+    }
 
     get(
         path: string,
@@ -82,7 +89,20 @@ export default class Router {
 
         const selectedRoute = filtredRoutes[0];
 
-        const response = await selectedRoute.callback(event);
+        let eventAfterMiddlewares: LambdaFunctionUrlEvent = event;
+
+        for (let i = 0; i < this.middlewares.length; i++) {
+            const middleware = this.middlewares[i];
+            const [event, response] = await middleware(eventAfterMiddlewares);
+            if (response) {
+                return response;
+            }
+            if (event) {
+                eventAfterMiddlewares = event;
+            }
+        }
+
+        const response = await selectedRoute.callback(eventAfterMiddlewares);
 
         return response;
     }
