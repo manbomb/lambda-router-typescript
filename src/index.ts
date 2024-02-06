@@ -1,7 +1,26 @@
+import type { APIGatewayProxyEventV2, APIGatewayProxyStructuredResultV2 } from "aws-lambda";
+
 import ExpressLambdaServer from "./ExpressLambdaServer";
 import Router, { Route, RouteOptions } from "./Router";
+import Middleware from "./middlewares/Middleware";
+import RateLimiter from "./middlewares/RateLimiter";
+
+import Repository from "./Repository";
+
+import * as Types from "./Types";
 
 export default Router;
 
-export { ExpressLambdaServer, Route, RouteOptions };
+export type LambdaFunctionUrlEvent = APIGatewayProxyEventV2;
+export type LambdaFunctionUrlResult = APIGatewayProxyStructuredResultV2;
+
+export {
+    ExpressLambdaServer,
+    Middleware,
+    RateLimiter,
+    Repository,
+    Route,
+    RouteOptions,
+    Types
+};
 
