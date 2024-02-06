@@ -1,13 +1,20 @@
-import {
-    APIGatewayProxyEventV2,
-    APIGatewayProxyStructuredResultV2,
-} from "aws-lambda";
+import Router, {
+    ExpressLambdaServer,
+    JSONBody,
+    LambdaFunctionUrlEvent,
+    LambdaFunctionUrlResult,
+    Middleware,
+    RateLimiter,
+} from "../../lib";
 
-import Router, { ExpressLambdaServer } from "../index";
-import Middleware from "../Middleware";
+import ExampleRepository from "./exampleRepository";
 
-type LambdaFunctionUrlResult = APIGatewayProxyStructuredResultV2;
-type LambdaFunctionUrlEvent = APIGatewayProxyEventV2;
+const repository = new ExampleRepository();
+const rateLimiter = new RateLimiter(repository, {
+    rpm: 20,
+    rps: null,
+});
+const jsonBody = new JSONBody();
 
 const consoleMiddleware: Middleware = (event) => {
     console.log(event);
@@ -25,9 +32,9 @@ const addKeyValueToBodyMiddleware: Middleware = (event) => {
 };
 
 const returnErrorMiddleware: Middleware = (event) => {
-    const randomBool = Math.random() > 0.5;
+    const randomBool = Math.random() > 0.05;
     if (randomBool) return [null, null];
-    const res: APIGatewayProxyStructuredResultV2 = {
+    const res: LambdaFunctionUrlResult = {
         body: JSON.stringify({
             message: "An error!",
         }),
@@ -44,6 +51,8 @@ async function handler(
     router.use(consoleMiddleware);
     router.use(addKeyValueToBodyMiddleware);
     router.use(returnErrorMiddleware);
+    router.use(rateLimiter.middleware);
+    router.use(jsonBody.middleware);
 
     router.post("/teste", async (event) => {
         const response: LambdaFunctionUrlResult = {
