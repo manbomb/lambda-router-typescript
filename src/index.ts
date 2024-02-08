@@ -1,3 +1,4 @@
+/* istanbul ignore file */
 import type { APIGatewayProxyEventV2, APIGatewayProxyStructuredResultV2 } from "aws-lambda";
 
 import ExpressLambdaServer from "./ExpressLambdaServer";

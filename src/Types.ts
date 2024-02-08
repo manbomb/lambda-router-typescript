@@ -1,3 +1,4 @@
+/* istanbul ignore file */
 export type Nullable<T> = T | null
 export type Promiseble<T> = Promise<T> | T
 

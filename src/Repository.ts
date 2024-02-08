@@ -1,3 +1,4 @@
+/* istanbul ignore file */
 import { Promiseble } from "./Types";
 
 export default interface Repository {
