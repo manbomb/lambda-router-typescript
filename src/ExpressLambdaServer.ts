@@ -1,4 +1,4 @@
-import express, { json, Request, Response } from "express";
+import express, { Express, Request, Response, json } from "express";
 
 import {
     APIGatewayProxyEventV2,
@@ -14,7 +14,7 @@ export default class ExpressLambdaServer {
         port: number,
         handler: HandlerType,
         callback?: ((port: number) => void) | undefined
-    ): void {
+    ): Express {
         const server = express();
 
         server.use(json());
@@ -81,5 +81,7 @@ export default class ExpressLambdaServer {
                   })(port)
                 : undefined
         );
+
+        return server;
     }
 }
