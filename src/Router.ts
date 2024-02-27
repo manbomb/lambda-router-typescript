@@ -13,7 +13,9 @@ export default class Router {
         this.middlewares.push(middleware);
     }
 
-    useMiddleware = (middleware: Middleware) => this.use(middleware); // alias
+    useMiddleware(middleware: Middleware) {
+        return this.use(middleware);
+    } // alias
 
     useParser(parser: Parser) {
         this.parsers.push(parser);
