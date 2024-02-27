@@ -55,7 +55,17 @@ export default class Router {
         });
     }
 
-    async call(event: LambdaFunctionUrlEvent) {
+    private parseResponse: Parser = (response) => {
+        const responseParsed = this.parsers.reduce(
+            (finalRes, parser) => parser(finalRes),
+            response
+        );
+        return responseParsed;
+    };
+
+    private async _call(
+        event: LambdaFunctionUrlEvent
+    ): Promise<LambdaFunctionUrlResult> {
         const httpContext = event.requestContext.http;
         const httpMethod = httpContext.method;
         const stage = (event as LambdaFunctionUrlEvent).requestContext.stage;
@@ -70,12 +80,12 @@ export default class Router {
         });
 
         if (filtredRoutes.length < 1) {
-            throw {
+            return this.parseResponse({
                 statusCode: 404,
-                body: {
+                body: JSON.stringify({
                     message: `Not found: ${httpMethod} ${path}`,
-                },
-            };
+                }),
+            });
         }
 
         const selectedRoute = filtredRoutes[0];
@@ -86,7 +96,7 @@ export default class Router {
             const middleware = this.middlewares[i];
             const [event, response] = await middleware(eventAfterMiddlewares);
             if (response) {
-                return response;
+                return this.parseResponse(response);
             }
             if (event) {
                 eventAfterMiddlewares = event;
@@ -95,12 +105,21 @@ export default class Router {
 
         const response = await selectedRoute.callback(eventAfterMiddlewares);
 
-        const responseParsed = this.parsers.reduce(
-            (finalRes, parser) => parser(finalRes),
-            response
-        );
+        return this.parseResponse(response);
+    }
 
-        return responseParsed;
+    async call(
+        event: LambdaFunctionUrlEvent
+    ): Promise<LambdaFunctionUrlResult> {
+        try {
+            const response = await this._call(event);
+            return response;
+        } catch (error: any) {
+            return {
+                statusCode: error.statusCode || 500,
+                body: JSON.stringify(error.body) || "Internal error."
+            };
+        }
     }
 }
 
