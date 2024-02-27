@@ -1,4 +1,5 @@
 import Router, {
+    AddContentTypeJSON,
     ExpressLambdaServer,
     JSONBody,
     LambdaFunctionUrlEvent,
@@ -54,26 +55,20 @@ async function handler(
     router.use(rateLimiter.middleware);
     router.use(jsonBody.middleware);
 
+    router.useParser(AddContentTypeJSON);
+
     router.post("/teste", async (event) => {
         const response: LambdaFunctionUrlResult = {
             statusCode: 200,
             body: JSON.stringify({
                 message: "Health!",
-                event,
             }),
         };
         return response;
     });
 
-    try {
-        const response = await router.call(event);
-        return response;
-    } catch (error: any) {
-        return {
-            statusCode: error.statusCode || 500,
-            body: JSON.stringify(error.body) || "Internal error.",
-        };
-    }
+    const response = await router.call(event);
+    return response;
 }
 
 ExpressLambdaServer.start(3000, handler, (port) =>
