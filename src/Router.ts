@@ -1,6 +1,7 @@
 import { LambdaFunctionUrlEvent, LambdaFunctionUrlResult, Parser } from ".";
 import { Promiseble } from "./Types";
 import Middleware from "./middlewares/Middleware";
+import HttpError from "./utils/HttpError";
 
 export default class Router {
     private routes: Route[] = [];
@@ -115,10 +116,11 @@ export default class Router {
             const response = await this._call(event);
             return response;
         } catch (error: any) {
-            return {
-                statusCode: error.statusCode || 500,
-                body: JSON.stringify(error.body) || "Internal error."
-            };
+            console.error(error);
+            if (error instanceof HttpError) {
+                return error.toLambdaResult();
+            }
+            return new HttpError().toLambdaResult();
         }
     }
 }
