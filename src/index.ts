@@ -16,6 +16,7 @@ import Parser from "./parsers/Parser";
 import Repository from "./Repository";
 
 import * as Types from "./Types";
+import HttpError from "./utils/HttpError";
 
 export default Router;
 
@@ -24,8 +25,7 @@ export type LambdaFunctionUrlResult = APIGatewayProxyStructuredResultV2;
 
 export {
     AddContentTypeJSON,
-    ExpressLambdaServer,
-    JSONBody,
+    ExpressLambdaServer, HttpError, JSONBody,
     Middleware,
     Parser,
     RateLimiter,
