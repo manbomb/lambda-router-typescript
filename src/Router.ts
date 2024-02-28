@@ -81,12 +81,12 @@ export default class Router {
         });
 
         if (filtredRoutes.length < 1) {
-            return this.parseResponse({
+            return {
                 statusCode: 404,
                 body: JSON.stringify({
                     message: `Not found: ${httpMethod} ${path}`,
                 }),
-            });
+            };
         }
 
         const selectedRoute = filtredRoutes[0];
@@ -97,7 +97,7 @@ export default class Router {
             const middleware = this.middlewares[i];
             const [event, response] = await middleware(eventAfterMiddlewares);
             if (response) {
-                return this.parseResponse(response);
+                return response;
             }
             if (event) {
                 eventAfterMiddlewares = event;
@@ -106,10 +106,10 @@ export default class Router {
 
         const response = await selectedRoute.callback(eventAfterMiddlewares);
 
-        return this.parseResponse(response);
+        return response;
     }
 
-    async call(
+    private async _secureCall(
         event: LambdaFunctionUrlEvent
     ): Promise<LambdaFunctionUrlResult> {
         try {
@@ -122,6 +122,12 @@ export default class Router {
             }
             return new HttpError().toLambdaResult();
         }
+    }
+
+    async call(
+        event: LambdaFunctionUrlEvent
+    ): Promise<LambdaFunctionUrlResult> {
+        return this.parseResponse(await this._secureCall(event));
     }
 }
 
