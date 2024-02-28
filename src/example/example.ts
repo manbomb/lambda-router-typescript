@@ -8,7 +8,7 @@ import Router, {
     RateLimiter,
 } from "../../lib";
 
-import ExampleRepository from "./exampleRepository";
+import ExampleRepository from "./ExampleRepository";
 
 const repository = new ExampleRepository();
 const rateLimiter = new RateLimiter(repository, {
