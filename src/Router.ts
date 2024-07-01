@@ -76,8 +76,38 @@ export default class Router {
             path = path.replace(stage, "");
         }
 
+        const matchRoute = (routePath: string, requestPath: string) => {
+            console.log("routePath >", routePath);
+            console.log("requestPath >", requestPath);
+            const routeParts = routePath
+                .split("/")
+                .filter((part) => part.length > 0);
+            const requestParts = requestPath
+                .split("/")
+                .filter((part) => part.length > 0);
+
+            if (routeParts.length !== requestParts.length) {
+                return null;
+            }
+
+            const params: { [key: string]: string } = {};
+
+            for (let i = 0; i < routeParts.length; i++) {
+                if (routeParts[i].startsWith(":")) {
+                    params[routeParts[i].slice(1)] = requestParts[i];
+                } else if (routeParts[i] !== requestParts[i]) {
+                    return null;
+                }
+            }
+
+            return params;
+        };
+
+        
         const filtredRoutes = this.routes.filter((r) => {
-            return r.httpMethod === httpMethod && r.path === path;
+            return (
+                r.httpMethod === httpMethod && matchRoute(r.path, path) !== null
+            );
         });
 
         if (filtredRoutes.length < 1) {
@@ -90,8 +120,12 @@ export default class Router {
         }
 
         const selectedRoute = filtredRoutes[0];
+        const params = matchRoute(selectedRoute.path, path);
 
-        let eventAfterMiddlewares: LambdaFunctionUrlEvent = event;
+        let eventAfterMiddlewares: LambdaFunctionUrlEvent = {
+            ...event,
+            pathParameters: params || undefined,
+        };
 
         for (let i = 0; i < this.middlewares.length; i++) {
             const middleware = this.middlewares[i];
