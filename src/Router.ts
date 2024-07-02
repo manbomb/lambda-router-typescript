@@ -77,8 +77,6 @@ export default class Router {
         }
 
         const matchRoute = (routePath: string, requestPath: string) => {
-            console.log("routePath >", routePath);
-            console.log("requestPath >", requestPath);
             const routeParts = routePath
                 .split("/")
                 .filter((part) => part.length > 0);
